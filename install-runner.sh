@@ -16,11 +16,14 @@ docker buildx build -t "${IMAGE}" --load "${SCRIPT_DIR}/image"
 
 docker save "${IMAGE}" | gzip | ssh "${PI_USER}@${TARGET_IP}" 'gunzip | docker load'
 
-ssh "${PI_USER}@${TARGET_IP}" \
-  "sudo install -d -m 700 -o runner -g runner /home/runner/.ssh; \
-   sudo test -f /home/runner/.ssh/deploy_key || sudo ssh-keygen -t ed25519 -f /home/runner/.ssh/deploy_key -N '' -C github-runner; \
-   sudo chown runner:runner /home/runner/.ssh/deploy_key /home/runner/.ssh/deploy_key.pub; \
-   sudo cat /home/runner/.ssh/deploy_key.pub" > ~/.ssh/deploy_key.pub
+ssh -t "${PI_USER}@${TARGET_IP}" \
+  "sudo install -d -m 700 -o runner -g runner /home/runner/.ssh && \
+   { sudo test -f /home/runner/.ssh/deploy_key || sudo ssh-keygen -t ed25519 -f /home/runner/.ssh/deploy_key -N '' -C github-runner; } && \
+   sudo chown runner:runner /home/runner/.ssh/deploy_key /home/runner/.ssh/deploy_key.pub && \
+   sudo cat /home/runner/.ssh/deploy_key.pub > ~/deploy_key.pub"
+
+scp "${PI_USER}@${TARGET_IP}:deploy_key.pub" ~/.ssh/deploy_key.pub
+ssh "${PI_USER}@${TARGET_IP}" "rm -f ~/deploy_key.pub"
 
 ssh "${PI_USER}@${TARGET_IP}" \
   "docker rm -f github-runner 2>/dev/null || true; \

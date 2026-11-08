@@ -10,7 +10,7 @@ You will need to go to your org or repo and add a runner there to fetch the deta
 
 
 ### registering each host
-Each pi will need to allow the runner to deploy docker images.  Perform this on the development machine
+Each pi will need to allow the runner to deploy docker images.  Perform this from the development machine (only use ip's for non github runner hosts)
 
 ```bash
 ./register-ssh.sh <target-ip> <target-ip> ...
